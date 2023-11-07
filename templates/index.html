@@ -1,0 +1,268 @@
+<!doctype html>
+<html>
+<head>
+    <title>Knowledge Graph</title>
+    <h1 align = "center" valign = "center">Knowledge Graph</h1>
+    <style type="text/css">
+        #viz {
+            margin: 0 auto;
+            display: block;
+            width: 900px;
+            height: 700px;
+        }
+
+    </style>
+    <script src="https://cdn.neo4jlabs.com/neovis.js/v1.6.0/neovis.js"></script>
+</head>
+<body>
+    <table border = 0 align = "center" cellspacing="15">
+        <tr>
+            <td>Starting node:</td>
+            <td><input type = "text" id = "node1Input" size = 15></td>
+            <td>Relationship:</td>
+            <td><input type = "text" id = "relationInput" size = 15></td>
+            <td>Ending node:</td>
+            <td><input type = "text" id = "node2Input" size = 15></td>
+            <!--
+            <td>Property:</td>
+            <td><input type = "text" id = "propertyInput" size = 15></td>
+            -->
+            <td><button type = "button" onclick = "search()">Search</button></td>
+        </tr>
+        <tr>
+            <td>Starting node:</td>
+            <td><input type = "text" id = "nodeInputSP1" size = 15></td>
+            <td></td>
+            <td></td>
+            <td>Ending node:</td>
+            <td><input type = "text" id = "nodeInputSP2" size = 15></td>
+            <td><button type = "button" onclick = "searchSP()">Search ShortestPath</button></td>
+        </tr>
+    </table>
+
+    <div id="viz"></div>
+
+    <h1>Upload a CSV File(Node)</h1>
+    <input type="file" id="csvFileInput1">
+    <button onclick="uploadCSV1()">Upload</button>
+    <div id="status"></div>
+
+    <h1>Upload a CSV File(Relation)</h1>
+    <input type="file" id="csvFileInput2">
+    <button onclick="uploadCSV2()">Upload</button>
+    <div id="status"></div>
+
+    <script>
+
+        var viz;
+
+        function draw() {
+
+            var config = {
+                container_id: "viz",
+                server_url: "neo4j://localhost:7687",
+                server_user: "neo4j",
+                server_password: "password",
+                labels: {
+                    "LOC": {
+                        caption: "Name",
+                        sizeCypher: "MATCH (n) WHERE id(n) = $id MATCH (n)-[r]->() RETURN Count(r)"
+                    },
+                    "ORG": {
+                        caption: "Name",
+                        sizeCypher: "MATCH (n) WHERE id(n) = $id MATCH (n)-[r]->() RETURN Count(r)"
+                    },
+                    "PER": {
+                        caption: "Name",
+                        sizeCypher: "MATCH (n) WHERE id(n) = $id MATCH (n)-[r]->() RETURN Count(r)"
+                    },
+                    "EVE": {
+                        caption: "Name",
+                        sizeCypher: "MATCH (n) WHERE id(n) = $id MATCH (n)-[r]->() RETURN Count(r)"
+                    },
+                    "MEDIA": {
+                        caption: "Name",
+                        sizeCypher: "MATCH (n) WHERE id(n) = $id MATCH (n)-[r]->() RETURN Count(r)"
+                    },
+                    "attribute": {
+                        caption: "Name",
+                        sizeCypher: "MATCH (n) WHERE id(n) = $id MATCH (n)-[r]->() RETURN Count(r)"
+                    }
+                },
+                relationships: {
+                    "KNOWS": {
+                    },
+                    "Type": {
+                    }
+                },
+                force: {
+                    repulsion: 200, // 节点之间的斥力因子。支持数组表达斥力范围，值越大斥力越大。
+                    gravity: 0.01, // 节点受到的向中心的引力因子。该值越大节点越往中心点靠拢。
+                    edgeLength: 400, // 边的两个节点之间的距离，这个距离也会受 repulsion影响 。值越大则长度越长
+                    layoutAnimation: true, // 因为力引导布局会在多次迭代后才会稳定，这个参数决定是否显示布局的迭代动画
+                    // 在浏览器端节点数据较多（>100）的时候不建议关闭，布局过程会造成浏览器假死。
+                },
+                //秀出有關係的跟沒關係的節點
+                initial_cypher: "match p=()-[]->() return p union match (p) return p",
+                //秀出有關係的節點
+                //initial_cypher: "match p=()-[]->() return p",
+                arrows: true
+            }
+
+            viz = new NeoVis.default(config);
+            viz.render();
+        }
+
+
+        function search() {
+            //取得使用者keyin的值
+            var node1Value = document.getElementById("node1Input").value;
+            var relationValue = document.getElementById("relationInput").value;
+            var node2Value = document.getElementById("node2Input").value;
+            var node1ValueSP = document.getElementById("nodeInputSP1").value;
+            var node2ValueSP = document.getElementById("nodeInputSP2").value;
+
+            //Cypher語法串接
+            //普通查詢
+            var cypherQuery = "MATCH (n";
+            if (node1Value != "") {
+                cypherQuery += ":" + node1Value;
+            }
+
+            cypherQuery += ")-[r";
+            if (relationValue != "") {
+                cypherQuery += ":" + relationValue;
+            }
+
+            cypherQuery += "]->(m"
+                if (node2Value != "") {
+                cypherQuery += ":" + node2Value;
+            }
+
+            cypherQuery += ") RETURN n, r, m";
+
+            //若都沒輸入那就秀出所有資料
+            if(node1Value == "" && node2Value == "" && relationValue == "") {
+                cypherQuery = "match p=()-[]->() return p union match (p) return p"
+            }
+
+            //可看語法，空的長 MATCH (n)-[r]->(m) RETURN n, r, m
+            alert(cypherQuery)
+
+            //清除舊的圖譜
+            viz.clearNetwork();
+
+            //重新生成知識圖譜
+            viz.renderWithCypher(cypherQuery);
+
+            //清除textbox值
+            document.getElementById("node1Input").value = "";
+            document.getElementById("relationInput").value = "";
+            document.getElementById("node2Input").value = "";
+            document.getElementById("nodeInputSP1").value = "";
+            document.getElementById("nodeInputSP2").value = "";
+        }
+
+
+        function searchSP() {
+            //取得使用者keyin的值
+            var node1Value = document.getElementById("node1Input").value;
+            var relationValue = document.getElementById("relationInput").value;
+            var node2Value = document.getElementById("node2Input").value;
+            var node1ValueSP = document.getElementById("nodeInputSP1").value;
+            var node2ValueSP = document.getElementById("nodeInputSP2").value;
+
+            //Cypher語法串接
+
+            //最短距離 shortestPath allshortestPaths
+            var cypherQuery = "MATCH p = allshortestPaths((n";
+            if (node1ValueSP != "") {
+                cypherQuery += ":" + node1ValueSP;
+            }
+
+            cypherQuery += ")-[*]-(m"
+                if (node2ValueSP != "") {
+                cypherQuery += ":" + node2ValueSP;
+            }
+
+            cypherQuery += ")) RETURN p";
+
+            //若都沒輸入那就秀出所有資料
+            if(node1ValueSP == "" && node2ValueSP == "") {
+                cypherQuery = "match p=()-[]->() return p union match (p) return p"
+            }
+
+            //清除舊的圖譜
+            viz.clearNetwork();
+
+            //重新生成知識圖譜
+            viz.renderWithCypher(cypherQuery);
+
+            //清除textbox值
+            document.getElementById("node1Input").value = "";
+            document.getElementById("relationInput").value = "";
+            document.getElementById("node2Input").value = "";
+            document.getElementById("nodeInputSP1").value = "";
+            document.getElementById("nodeInputSP2").value = "";
+        }
+
+        function uploadCSV1() {
+            const fileInput = document.getElementById('csvFileInput1');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('csvFile', file);
+
+                fetch('/uploadNodes', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').textContent = data.message;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            } else {
+                alert('Please select a CSV file to upload.');
+            }
+
+            draw();
+
+        }
+
+
+        function uploadCSV2() {
+            const fileInput = document.getElementById('csvFileInput2');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('csvFile', file);
+
+                fetch('/uploadRelations', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').textContent = data.message;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            } else {
+                alert('Please select a CSV file to upload.');
+            }
+
+            draw();
+
+        }
+
+        draw();
+
+    </script>
+</body>
+</html>
