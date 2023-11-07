@@ -25,6 +25,8 @@ csv File is in the dataset folder
 2. panda 繪圖比較慢，上傳後需要等一下重新整理後再等一下就會出現
 ```
 ### 上傳 CSV 的地方
-![image](https://github.com/YiJunKo/knowledge-graph/assets/50664144/18e6afaa-0900-4a9b-ada2-12eed5c22024)
+![image](https://github.com/YiJunKo/neo4j-knowledge-graph/assets/50664144/aade4ebb-5616-4e08-8dff-2d64a9b637fa)
+
 ### 成品畫面
-![image](https://github.com/YiJunKo/knowledge-graph/assets/50664144/e57858b2-777d-40a4-9b95-ea4c8f0d6bf0)
+![image](https://github.com/YiJunKo/neo4j-knowledge-graph/assets/50664144/2bb6c56b-383f-4b62-899a-841e75c826b5)
+
